@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>VolleyHub NTX</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* UPDATE GUIDE: Search these strings to customize:
+   VH_Admin_2026!  = admin password
+   VolleyHubNTX    = venmo/paypal username
+   info.volleyhubntx@gmail.com = contact/zelle email
+   YOUR_GOOGLE_SHEET_WEBHOOK_URL_HERE = paste your Apps Script URL
+*/
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--tm:#1D9E75;--tl:#E1F5EE;--td:#085041;--bm:#378ADD;--bl:#E6F1FB;--bd:#0C447C;--dk:#1a1f2e;--dk2:#252c3d;--gy:#f0f4f8;--wh:#fff;--tx:#1a1f2e;--mu:#6b7280;--br:#e2e8f0;--gl:#EAF3DE;--gd:#3B6D11;--al:#FAEEDA;--am:#BA7517;--ad:#854F0B;--rl:#FCEBEB;--rm:#E24B4A;--rd:#A32D2D;--pl:#EEEDFE;--pd:#3C3489}
+body{font-family:'Barlow',sans-serif;background:var(--gy);color:var(--tx);-webkit-font-smoothing:antialiased}
+#app{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.hdr{background:var(--dk);position:sticky;top:0;z-index:90}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
+.logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:#fff;line-height:1}
+.logo em{color:var(--tm);font-style:normal}
+.logo-sub{font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2.5px;text-transform:uppercase;font-weight:600;display:block;margin-top:1px}
+.rbtn{background:var(--tm);color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:700;cursor:pointer;text-align:center;line-height:1.4;max-width:128px;font-family:inherit}
+.tbar{background:var(--dk2);padding:5px 16px;display:flex;align-items:center;justify-content:space-between}
+.tlbl{font-size:11px;color:rgba(255,255,255,0.55);font-weight:600}
+.tval{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--tm)}
+.tval.warn{color:#EF9F27}.tval.exp{color:var(--rm)}
+.uglink{font-size:10px;color:var(--tm);font-weight:700;cursor:pointer;text-decoration:underline;display:none}
+.tbadge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--al);color:var(--ad)}
+.tbadge.pro{background:var(--tl);color:var(--td)}
+.nav{display:flex;background:var(--dk);border-top:1px solid rgba(255,255,255,0.08)}
+.ni{flex:1;padding:8px 2px 7px;text-align:center;font-size:9.5px;font-weight:700;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;text-transform:uppercase}
+.ni.on{color:var(--tm);border-bottom-color:var(--tm)}
+.ni-i{font-size:14px;display:block;margin-bottom:2px}
+.view{display:none;padding:12px;flex:1}
+.view.on{display:block}
+.notice{background:var(--bl);border:0.5px solid var(--bm);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:12px;color:var(--bd);line-height:1.55}
+.notice a{color:var(--bd);font-weight:700;cursor:pointer}
+.warn-bar{background:var(--al);border:0.5px solid var(--am);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:12px;color:var(--ad);line-height:1.55}
+.warn-bar strong{display:block;font-size:13px;margin-bottom:2px}
+.slbl{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.empty{text-align:center;padding:40px 16px;color:var(--mu)}
+.empty .ei{font-size:44px;margin-bottom:10px}
+.empty p{font-size:13px;line-height:1.65}
+/* COUNTDOWN */
+.cdc{background:var(--wh);border-radius:12px;border:0.5px solid var(--br);overflow:hidden;margin-bottom:8px}
+.cdh{background:var(--dk);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cdn{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;color:#fff;flex:1;line-height:1.1}
+.cdr{font-size:10px;color:rgba(255,255,255,0.4);font-weight:600}
+.pill{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;padding:3px 10px;border-radius:6px;color:#fff;white-space:nowrap}
+.pill.hot{background:var(--rm)}.pill.warm{background:var(--am)}.pill.cool{background:var(--tm)}.pill.past{background:#888}
+.cdb{padding:10px 14px}
+.mrow{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.tag{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.ta{background:var(--bl);color:var(--bd)}.tc{background:var(--gy);color:var(--mu)}.tk{background:var(--gl);color:var(--gd)}.ts{background:var(--pl);color:var(--pd)}
+.cd-note{font-size:12px;color:var(--mu);margin-bottom:6px;line-height:1.5}
+.sess-list{background:var(--gy);border-radius:8px;padding:8px 10px;margin:6px 0;display:none}
+.sess-list.open{display:block}
+.sr{font-size:12px;padding:5px 0;border-bottom:0.5px solid var(--br);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.sr:last-child{border-bottom:none}
+.sl{font-weight:700;color:var(--tx)}
+.sm{color:var(--mu);font-size:11px;text-align:right}
+.exbtn{font-size:11px;color:var(--tm);font-weight:700;cursor:pointer;background:none;border:none;padding:0;margin-bottom:6px;display:block;font-family:inherit}
+.rlink{display:inline-block;background:var(--tm);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;margin-top:4px}
+/* SEARCH & FILTER */
+.sbox{background:var(--wh);border:0.5px solid var(--br);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sbox input{border:none;outline:none;font-size:14px;flex:1;background:transparent;color:var(--tx);font-family:inherit}
+.sbox input::placeholder{color:var(--mu)}
+.chips{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid var(--br);background:var(--wh);color:var(--mu);transition:all 0.15s}
+.chip.on{background:var(--dk);color:#fff;border-color:var(--dk)}
+/* CLUB CARD */
+.cc{background:var(--wh);border-radius:12px;border:0.5px solid var(--br);overflow:hidden;margin-bottom:10px}
+.cc-hdr{padding:11px 14px;border-bottom:0.5px solid var(--br);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.cc-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;line-height:1.1}
+.cc-dir{font-size:11px;color:var(--mu);margin-top:2px}
+.cc-ph{font-size:11px;font-weight:600}
+.rnk{background:var(--dk);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;min-width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cc-body{padding:11px 14px}
+.ig{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:9px}
+.ii .lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:1px}
+.ii .val{font-size:13px;font-weight:600}
+.ages{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px}
+.ab{background:var(--bl);color:var(--bd);font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.cb{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-bottom:7px}
+.cb.full{background:var(--rl);color:var(--rd)}.cb.coop{background:var(--gl);color:var(--gd)}
+.btns{display:flex;gap:7px}
+.bd{flex:1;background:var(--dk);color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.bo{flex:1;background:transparent;color:var(--dk);border:1.5px solid var(--br);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.bfav{width:34px;background:transparent;border:1.5px solid var(--br);border-radius:8px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bfav.on{background:var(--al);border-color:var(--am)}
+/* COACH */
+.coc{background:var(--wh);border-radius:12px;border:0.5px solid var(--br);overflow:hidden;margin-bottom:10px}
+.coc-hdr{padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--br)}
+.ava{width:42px;height:42px;border-radius:50%;background:var(--bl);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;color:var(--bd);flex-shrink:0}
+.coc-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;line-height:1.1}
+.coc-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.ccc-lnk{display:inline-block;margin-top:4px;background:var(--tl);color:var(--td);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-decoration:none}
+.coc-body{padding:11px 14px}
+.bul{display:flex;gap:7px;margin-bottom:5px;font-size:12px;line-height:1.5}
+.bul span{color:var(--tm);font-size:11px;margin-top:1px;flex-shrink:0}
+.hist{display:flex;flex-wrap:wrap;gap:3px;margin-top:9px}
+.ht{font-size:10px;background:var(--gy);padding:2px 7px;border-radius:4px;color:var(--mu)}
+.ht.cur{background:var(--tl);color:var(--td)}
+/* COMPARE */
+.cmp-s{background:var(--wh);border-radius:12px;border:0.5px solid var(--br);padding:13px 14px;margin-bottom:10px}
+.cmp-t{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:10px}
+.slot{min-height:50px;border:1.5px dashed var(--br);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--mu);font-weight:700;text-align:center;padding:6px;position:relative}
+.slot.filled{background:var(--tl);border-color:var(--tm);color:var(--td)}
+.slot .rm{position:absolute;top:-7px;right:-7px;width:18px;height:18px;background:var(--dk);border:none;border-radius:50%;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cmp-run{width:100%;background:var(--tm);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;cursor:pointer}
+.cmp-tbl{background:var(--wh);border-radius:12px;border:0.5px solid var(--br);overflow:hidden;margin-bottom:10px;overflow-x:auto}
+.cmp-tbl table{width:100%;border-collapse:collapse;font-size:11px}
+.cmp-tbl th{background:var(--dk);color:#fff;padding:8px 7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;text-align:center;white-space:nowrap}
+.cmp-tbl th:first-child{text-align:left;font-size:10px;color:rgba(255,255,255,0.5);width:90px}
+.cmp-tbl td{padding:8px 7px;border-bottom:0.5px solid var(--br);font-size:11px;vertical-align:middle}
+.cmp-tbl td:first-child{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--mu);background:var(--gy);white-space:nowrap}
+.cmp-tbl td:not(:first-child){text-align:center;font-weight:600}
+.cmp-tbl tr:last-child td{border-bottom:none}
+/* MODAL */
+.mwrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.7);z-index:150;align-items:flex-end;justify-content:center}
+.mwrap.open{display:flex}
+.modal{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.mh{width:36px;height:4px;background:var(--br);border-radius:2px;margin:12px auto 0}
+.mhdr{padding:14px 16px 10px;border-bottom:0.5px solid var(--br);position:relative}
+.mhdr h2{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px}
+.mhdr p{font-size:12px;color:var(--mu);margin-top:2px}
+.mcls{position:absolute;top:12px;right:14px;background:var(--gy);border:none;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mbdy{padding:14px 16px}
+.msec{margin-bottom:14px}
+.msec h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:7px}
+.drow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--br);font-size:13px;gap:8px}
+.drow:last-child{border-bottom:none}
+.dlbl{color:var(--mu);flex-shrink:0}.dval{font-weight:600;text-align:right}
+.ev-item{background:var(--gy);border-radius:8px;padding:9px 10px;margin-bottom:6px}
+.ev-age{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px}
+.ev-det{font-size:12px;color:var(--mu);margin-top:2px;line-height:1.5}
+/* PAYWALL */
+.pw-wrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.93);z-index:200;align-items:flex-end;justify-content:center}
+.pw-wrap.open{display:flex}
+.pw-box{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:92vh;overflow-y:auto}
+.pw-hdr{background:var(--dk);padding:20px;border-radius:20px 20px 0 0;text-align:center}
+.pw-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:#fff}
+.pw-logo em{color:var(--tm);font-style:normal}
+.pw-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.pw-body{padding:20px}
+.pw-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;margin-bottom:6px}
+.pw-desc{font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:16px}
+.tier-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.tcard{border:2px solid var(--br);border-radius:12px;padding:14px 12px;cursor:pointer;transition:all 0.15s;position:relative}
+.tcard.sel{border-color:var(--tm);background:var(--tl)}
+.tcard.pop::before{content:'Most Popular';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--tm);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.tc-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;margin-bottom:2px}
+.tc-price{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--tm)}
+.tc-per{font-size:10px;color:var(--mu);font-weight:600}
+.tc-feats{margin-top:8px}
+.tc-feat{font-size:11px;color:var(--mu);padding:2px 0;display:flex;gap:5px}
+.tc-feat::before{content:"2713";content:"✓";color:var(--tm);font-weight:700;flex-shrink:0}
+.pw-lbl{font-size:11px;font-weight:700;color:var(--tx);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.pw-in{width:100%;border:1.5px solid var(--br);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--tx);background:#fff;margin-bottom:10px;font-family:inherit}
+.pw-in:focus{outline:none;border-color:var(--tm)}
+.pay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.pbtn{border:1.5px solid var(--br);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:center;font-size:12px;font-weight:700;background:#fff;transition:all 0.15s;font-family:inherit}
+.pbtn .pi{font-size:18px;display:block;margin-bottom:3px}
+.pbtn.ven{border-color:#3D95CE;color:#3D95CE}
+.pbtn.pal{border-color:#003087;color:#003087}
+.pbtn.zel{border-color:#6D1ED4;color:#6D1ED4}
+.pbtn.crd{border-color:var(--tm);color:var(--tm)}
+.pay-note{font-size:11px;color:var(--mu);text-align:center;line-height:1.6;margin-bottom:12px}
+.code-sec{background:var(--gy);border-radius:10px;padding:14px;margin-bottom:12px}
+.code-ttl{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;margin-bottom:4px}
+.code-desc{font-size:11px;color:var(--mu);margin-bottom:8px;line-height:1.5}
+.code-row{display:flex;gap:7px}
+.cin{flex:1;border:1.5px solid var(--br);border-radius:8px;padding:9px 10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;letter-spacing:3px;font-weight:700;text-transform:uppercase}
+.cin:focus{outline:none;border-color:var(--tm)}
+.csub{background:var(--tm);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
+.pw-dismiss{display:block;text-align:center;font-size:11px;color:var(--mu);margin-top:10px;cursor:pointer;text-decoration:underline}
+/* ACCESS GRANTED */
+.ag-wrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.93);z-index:300;align-items:center;justify-content:center;padding:20px}
+.ag-wrap.open{display:flex}
+.ag-box{background:#fff;border-radius:16px;padding:28px 22px;max-width:360px;width:100%;text-align:center}
+.ag-icon{font-size:46px;margin-bottom:10px}
+.ag-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--tm);margin-bottom:8px}
+.ag-text{font-size:13px;color:var(--mu);line-height:1.7;margin-bottom:14px}
+.ag-code{background:var(--dk);color:var(--tm);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:4px;padding:10px 20px;border-radius:8px;display:inline-block;margin-bottom:12px}
+.ag-btn{width:100%;background:var(--tm);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;cursor:pointer}
+/* FIRST VISIT */
+.fv-wrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.96);z-index:500;align-items:center;justify-content:center;padding:16px}
+.fv-wrap.open{display:flex}
+.fv-box{background:#fff;border-radius:16px;max-width:390px;width:100%;overflow:hidden;max-height:92vh;overflow-y:auto}
+.fv-hdr{background:var(--dk);padding:20px;text-align:center}
+.fv-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;color:#fff}
+.fv-logo em{color:var(--tm);font-style:normal}
+.fv-tag{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:4px;font-weight:600}
+.fv-body{padding:20px}
+.fv-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;margin-bottom:10px}
+.fv-txt{font-size:13px;color:var(--mu);line-height:1.75;margin-bottom:8px}
+.fv-list{margin:10px 0 14px}
+.fv-li{font-size:12px;color:var(--mu);padding:4px 0;display:flex;gap:6px}
+.fv-li::before{content:"✓";color:var(--tm);font-weight:700;flex-shrink:0}
+.fv-warn{background:var(--al);border:0.5px solid var(--am);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--ad);line-height:1.6}
+.fv-warn strong{display:block;margin-bottom:2px;font-size:13px}
+.fv-btn{width:100%;background:var(--dk);color:#fff;border:none;border-radius:10px;padding:14px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:18px;letter-spacing:1px;cursor:pointer;margin-bottom:8px}
+.fv-link{display:block;text-align:center;font-size:11px;color:var(--mu);cursor:pointer;text-decoration:underline}
+/* ADMIN */
+.adm-login{max-width:360px;margin:40px auto;padding:0 16px}
+.adm-card{background:var(--wh);border-radius:14px;border:0.5px solid var(--br);padding:24px}
+.adm-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px}
+.adm-sub{font-size:13px;color:var(--mu);margin-bottom:18px}
+.adm-in{width:100%;border:1.5px solid var(--br);border-radius:8px;padding:10px 12px;font-size:15px;margin-bottom:10px;font-family:inherit}
+.adm-btn{width:100%;background:var(--dk);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;cursor:pointer;letter-spacing:1px}
+.adm-err{font-size:12px;color:var(--rm);margin-top:6px;display:none}
+.sg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.sc{background:var(--wh);border-radius:10px;border:0.5px solid var(--br);padding:12px}
+.sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--mu);margin-bottom:4px}
+.sc-val{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px}
+.sc-sub{font-size:10px;color:var(--mu);margin-top:2px}
+.utbl{background:var(--wh);border-radius:10px;border:0.5px solid var(--br);overflow:hidden;margin-bottom:12px;overflow-x:auto}
+.utbl table{width:100%;border-collapse:collapse;font-size:11px;min-width:440px}
+.utbl th{background:var(--dk);color:#fff;padding:8px 9px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px}
+.utbl td{padding:8px 9px;border-bottom:0.5px solid var(--br)}
+.utbl tr:last-child td{border-bottom:none}
+.sp{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+.sp.pend{background:var(--al);color:var(--ad)}.sp.act{background:var(--gl);color:var(--gd)}.sp.exp{background:var(--rl);color:var(--rd)}
+.adm-sec{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin:14px 0 8px}
+.back-btn{background:transparent;border:none;color:var(--tm);font-weight:700;font-size:13px;cursor:pointer;padding:0;margin-bottom:12px;display:flex;align-items:center;gap:4px;font-family:inherit}
+/* STATIC PAGES */
+.spage{padding:14px 16px}
+.spage h2{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;margin-bottom:12px}
+.spage h3{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin:14px 0 6px}
+.spage p{font-size:12px;color:var(--mu);line-height:1.75;margin-bottom:8px}
+.spage ul{margin:0 0 10px;padding-left:16px}
+.spage ul li{font-size:12px;color:var(--mu);line-height:1.7;padding:2px 0}
+.cf-lbl{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:4px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+.cf-in{width:100%;border:1.5px solid var(--br);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:10px;background:#fff;color:var(--tx);font-family:inherit}
+.cf-in:focus{outline:none;border-color:var(--tm)}
+.cf-ta{width:100%;border:1.5px solid var(--br);border-radius:8px;padding:9px 11px;font-size:13px;margin-bottom:10px;background:#fff;color:var(--tx);height:100px;resize:vertical;font-family:inherit}
+.cf-ta:focus{outline:none;border-color:var(--tm)}
+.cf-btn{width:100%;background:var(--tm);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:15px;letter-spacing:1px;cursor:pointer}
+/* FOOTER */
+.footer{background:var(--dk);padding:12px 16px;margin-top:auto}
+.footer-txt{font-size:10px;color:rgba(255,255,255,0.38);line-height:1.65;text-align:center}
+.footer-links{display:flex;justify-content:center;gap:12px;margin-top:6px;flex-wrap:wrap}
+.fl{font-size:10px;color:rgba(255,255,255,0.45);cursor:pointer;text-decoration:underline}
+@media(min-width:431px){#app{border-left:1px solid var(--br);border-right:1px solid var(--br)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="logo">Volley<em>Hub</em> NTX</div>
+        <span class="logo-sub">North Texas Club Volleyball</span>
+      </div>
+      <button class="rbtn" onclick="doRefresh()">&#8635; REFRESH DATA<br><span style="font-size:9px;opacity:0.8">Press before viewing</span></button>
+    </div>
+    <div class="tbar">
+      <span class="tlbl" id="tlbl">Free Preview</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="tval" id="tval">5:00</span>
+        <span id="tbadge"></span>
+        <span class="uglink" id="uglink" onclick="openPW()">Unlock Full Access &#8599;</span>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="ni on" onclick="go('home')" id="tab-home"><span class="ni-i">&#9200;</span>Tryouts</div>
+      <div class="ni" onclick="go('clubs')" id="tab-clubs"><span class="ni-i">&#127953;</span>Clubs</div>
+      <div class="ni" onclick="go('coaches')" id="tab-coaches"><span class="ni-i">&#9733;</span>Coaches</div>
+      <div class="ni" onclick="go('compare')" id="tab-compare"><span class="ni-i">&#9878;</span>Compare</div>
+      <div class="ni" onclick="go('dash')" id="tab-dash"><span class="ni-i">&#10084;</span>My Clubs</div>
+    </div>
+  </div>
+
+  <div class="view on" id="view-home">
+    <div class="notice">Data sourced from club websites &amp; NTR/VStarVolleyball.com. Always verify with clubs directly. <a onclick="go('disclaimer')">Full Disclaimer &#8599;</a></div>
+    <div class="slbl">&#9201; Tryout Countdown &#8212; Soonest First</div>
+    <div id="cd-list"></div>
+  </div>
+
+  <div class="view" id="view-clubs">
+    <div class="sbox"><span style="color:var(--mu)">&#128269;</span><input type="text" id="club-search" placeholder="Search club, city, director..." oninput="renderClubs()"></div>
+    <div class="chips" id="age-chips">
+      <div class="chip on" onclick="setAge(this,'all')">All Ages</div>
+      <div class="chip" onclick="setAge(this,'18')">18s</div>
+      <div class="chip" onclick="setAge(this,'17')">17s</div>
+      <div class="chip" onclick="setAge(this,'16')">16s</div>
+      <div class="chip" onclick="setAge(this,'15')">15s</div>
+      <div class="chip" onclick="setAge(this,'14')">14s</div>
+      <div class="chip" onclick="setAge(this,'13')">13s</div>
+      <div class="chip" onclick="setAge(this,'12')">12s</div>
+      <div class="chip" onclick="setAge(this,'11')">11s</div>
+      <div class="chip" onclick="setAge(this,'10')">10s</div>
+    </div>
+    <div id="club-list"></div>
+  </div>
+
+  <div class="view" id="view-coaches">
+    <div class="sbox"><span style="color:var(--mu)">&#128269;</span><input type="text" id="coach-search" placeholder="Search coach or club..." oninput="renderCoaches()"></div>
+    <div class="notice">Reviews are hosted on Club Coach Connect. Tap any card to view or submit a review. VolleyHub NTX does not host reviews.</div>
+    <div id="coach-list"></div>
+  </div>
+
+  <div class="view" id="view-compare">
+    <div class="cmp-s">
+      <div class="cmp-t">Select up to 4 clubs to compare</div>
+      <div class="slots" id="cmp-slots"></div>
+      <button class="cmp-run" onclick="buildCompare()">Compare Side by Side &#9878;</button>
+    </div>
+    <div id="cmp-out"></div>
+    <div class="notice">Add clubs using the "+ Compare" button in the Clubs tab.</div>
+  </div>
+
+  <div class="view" id="view-dash">
+    <div class="warn-bar"><strong>&#9888; Saved on this device only</strong>Favorites are stored in this browser and will not sync across devices. <span style="cursor:pointer;text-decoration:underline" onclick="openPW()">Upgrade for full dashboard access.</span></div>
+    <div id="dash-list"></div>
+  </div>
+
+  <div class="view" id="view-admin">
+    <div id="adm-login-view">
+      <div class="adm-login">
+        <div class="adm-card">
+          <div class="adm-title">Admin Dashboard</div>
+          <div class="adm-sub">VolleyHub NTX &#8212; Owner Access Only</div>
+          <input class="adm-in" type="password" id="adm-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')adminLogin()">
+          <button class="adm-btn" onclick="adminLogin()">Access Dashboard</button>
+          <div class="adm-err" id="adm-err">Incorrect password. Please try again.</div>
+        </div>
+      </div>
+    </div>
+    <div id="adm-dash-view" style="display:none;padding:12px">
+      <button class="back-btn" onclick="adminLogout()">&#8592; Logout</button>
+      <div class="slbl">Overview</div>
+      <div class="sg" id="adm-stats"></div>
+      <div class="slbl" style="margin-top:4px">Revenue</div>
+      <div class="sg" id="adm-rev"></div>
+      <div class="adm-sec">User &amp; Payment Tracker</div>
+      <div class="notice">Mark users Active once payment is verified, then email them their code from info.volleyhubntx@gmail.com &nbsp;<a href="https://docs.google.com/spreadsheets/d/1BQvhqvEPOgSWaTAVU8uFZAdELe4gkvseFHrMuhEvZuw/edit" target="_blank">Open Google Sheet &#8599;</a></div>
+      <div class="utbl" id="adm-utbl"></div>
+      <div class="adm-sec">Top Viewed Clubs</div>
+      <div class="sc" style="padding:10px 14px" id="adm-topclubs"></div>
+      <div class="adm-sec">Feature Usage</div>
+      <div class="sg" id="adm-feat"></div>
+      <div class="warn-bar" style="margin-top:8px">&#128274; Change admin password before going live. Search "VH_Admin_2026!" in this file.</div>
+    </div>
+  </div>
+
+  <div class="view" id="view-disclaimer">
+    <div class="spage">
+      <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+      <h2>Disclaimer &amp; Terms of Use</h2>
+      <h3>Data Sources</h3>
+      <p>Information on VolleyHub NTX is sourced from individual club websites, the North Texas Region (NTR), and VStarVolleyball.com for informational purposes only.</p>
+      <h3>Accuracy &amp; Changes</h3>
+      <p>All data including tryout dates, fees, dues, coaching staff, and age groups is subject to change at any time without notice and may contain errors or omissions depending on what clubs have publicly shared. VolleyHub NTX makes no guarantees regarding completeness, timeliness, or accuracy.</p>
+      <h3>No Affiliation</h3>
+      <p>VolleyHub NTX is not affiliated with, endorsed by, or connected to USA Volleyball (USAV), the North Texas Region (NTR), VStarVolleyball.com, or any individual club listed. All club names and marks are property of their respective owners.</p>
+      <h3>Verify Before Deciding</h3>
+      <p>Always verify all information directly with the club before making any financial commitments. VolleyHub NTX is not responsible for decisions made based on information presented on this site.</p>
+      <h3>Coach Information</h3>
+      <p>Coach profiles are informational only. Reviews are hosted on Club Coach Connect (clubcoachconnect.com), an independent platform. VolleyHub NTX is not responsible for external content.</p>
+      <h3>Payments</h3>
+      <p>Subscriptions are non-refundable once an access code has been issued. Codes are per-device and non-transferable. Contact info.volleyhubntx@gmail.com for billing questions.</p>
+      <h3>Contact for Updates</h3>
+      <p>Club directors may request updates or removal via the Contact Us page. All requests will be addressed promptly.</p>
+      <h3>Last Updated</h3><p>May 2026. Terms may be updated at any time.</p>
+    </div>
+  </div>
+
+  <div class="view" id="view-privacy">
+    <div class="spage">
+      <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+      <h2>Privacy Policy</h2>
+      <p><strong>Effective: May 2026</strong></p>
+      <h3>Information We Collect</h3>
+      <p>When you subscribe, we collect your name and email address to issue your access code and provide support. We do not collect payment card numbers &#8212; all payments go through Venmo, PayPal, or Zelle directly.</p>
+      <h3>Local Storage</h3>
+      <p>VolleyHub NTX uses browser local storage to save your favorite clubs and access tier. This data never leaves your device and is not transmitted to any server. Clear it anytime via your browser settings.</p>
+      <h3>How We Use Your Info</h3>
+      <ul><li>To send your subscription access code</li><li>To respond to support requests</li><li>To track subscription status internally</li><li>We will never sell or share your personal information with third parties</li></ul>
+      <h3>Third-Party Services</h3>
+      <p>This site links to Club Coach Connect, NTR VStarVolleyball.com, and club websites. VolleyHub NTX is not responsible for their privacy practices. Payments go through Venmo, PayPal, and Zelle &#8212; see their policies.</p>
+      <h3>Data Retention</h3>
+      <p>Subscriber information is retained for the active season and up to 12 months for billing/support. You may request deletion at info.volleyhubntx@gmail.com &#8212; processed within 5 business days.</p>
+      <h3>Children's Privacy</h3>
+      <p>VolleyHub NTX is intended for parents and guardians. We do not knowingly collect information from children under 13.</p>
+      <h3>Contact</h3><p><strong>info.volleyhubntx@gmail.com</strong></p>
+    </div>
+  </div>
+
+  <div class="view" id="view-contact">
+    <div class="spage">
+      <button class="back-btn" onclick="go('home')">&#8592; Back</button>
+      <h2>Contact Us</h2>
+      <p>Questions, corrections, or need to update your club listing? We respond within 1&#8211;2 business days.</p>
+      <p><strong>Email:</strong> info.volleyhubntx@gmail.com</p>
+      <div class="notice" style="margin-top:10px"><strong>Club Directors:</strong> Your listing is free advertising to thousands of North Texas volleyball families. But if you need updates or removal, we're happy to help &#8212; just ask.</div>
+      <div style="background:var(--gy);border-radius:10px;padding:14px;margin-top:12px">
+        <label class="cf-lbl">Your Name</label>
+        <input class="cf-in" type="text" id="cf-name" placeholder="Full name">
+        <label class="cf-lbl">Email</label>
+        <input class="cf-in" type="email" id="cf-email" placeholder="your@email.com">
+        <label class="cf-lbl">Subject</label>
+        <select class="cf-in" id="cf-subject">
+          <option value="">Select a topic...</option>
+          <option>Update club information</option>
+          <option>Remove my club listing</option>
+          <option>Report incorrect information</option>
+          <option>Subscription / access code help</option>
+          <option>General question</option>
+          <option>Other</option>
+        </select>
+        <label class="cf-lbl">Message</label>
+        <textarea class="cf-ta" id="cf-msg" placeholder="How can we help?"></textarea>
+        <button class="cf-btn" onclick="submitContact()">Send Message &#8594;</button>
+        <div id="cf-ok" style="display:none;text-align:center;padding:12px;font-size:13px;color:var(--gd);font-weight:700;margin-top:8px">&#10003; Message sent! We'll be in touch within 1&#8211;2 business days.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-txt">Data sourced from club websites &amp; NTR/VStarVolleyball.com. Subject to change. May contain errors.<br>Not affiliated with USAV or NTR. Always verify directly with clubs before making decisions.<br>Last refreshed: <span id="footer-ts">Press Refresh above</span></div>
+    <div class="footer-links">
+      <span class="fl" onclick="go('disclaimer')">Disclaimer</span>
+      <span class="fl" onclick="go('privacy')">Privacy Policy</span>
+      <span class="fl" onclick="go('contact')">Contact Us</span>
+      <span class="fl" onclick="go('admin')">Admin</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mwrap" id="mwrap" onclick="closeMW(event)">
+  <div class="modal"><div class="mh"></div><div style="position:relative" id="minner"></div></div>
+</div>
+
+<!-- PAYWALL -->
+<div class="pw-wrap" id="pw-wrap">
+  <div class="pw-box">
+    <div class="pw-hdr"><div class="pw-logo">Volley<em>Hub</em> NTX</div><div class="pw-sub">Unlock Full Access</div></div>
+    <div class="pw-body">
+      <div class="pw-title">Your free preview has ended</div>
+      <div class="pw-desc">Choose a plan to continue accessing North Texas' most complete club volleyball directory.</div>
+      <div class="tier-grid">
+        <div class="tcard sel" id="tc-ess" onclick="selTier('essential')">
+          <div class="tc-name">Essential</div><div class="tc-price">$25</div><div class="tc-per">per season</div>
+          <div class="tc-feats">
+            <div class="tc-feat">Full club directory</div>
+            <div class="tc-feat">Tryout countdown</div>
+            <div class="tc-feat">Compare tool</div>
+            <div class="tc-feat">Coach directory</div>
+          </div>
+        </div>
+        <div class="tcard pop" id="tc-pro" onclick="selTier('pro')">
+          <div class="tc-name">Pro</div><div class="tc-price">$50</div><div class="tc-per">per season</div>
+          <div class="tc-feats">
+            <div class="tc-feat">Everything in Essential</div>
+            <div class="tc-feat">My Clubs dashboard</div>
+            <div class="tc-feat">Coach review links</div>
+            <div class="tc-feat">Priority support</div>
+          </div>
+        </div>
+      </div>
+      <label class="pw-lbl">Your Name</label>
+      <input class="pw-in" type="text" id="pw-name" placeholder="Full name">
+      <label class="pw-lbl">Your Email</label>
+      <input class="pw-in" type="email" id="pw-email" placeholder="your@email.com">
+      <p style="font-size:12px;color:var(--mu);margin-bottom:14px;line-height:1.6">Your access code will be emailed to you. Allow a few hours after payment verification.</p>
+      <label class="pw-lbl">Choose Payment</label>
+      <div class="pay-grid">
+        <div class="pbtn ven" onclick="payWith('venmo')"><span class="pi">&#9410;</span>Venmo<br><span style="font-size:9px;opacity:0.7">@VolleyHubNTX</span></div>
+        <div class="pbtn pal" onclick="payWith('paypal')"><span class="pi">&#128179;</span>PayPal<br><span style="font-size:9px;opacity:0.7">paypal.me/VolleyHubNTX</span></div>
+        <div class="pbtn zel" onclick="payWith('zelle')"><span class="pi">&#9487;</span>Zelle<br><span style="font-size:9px;opacity:0.7">info.volleyhubntx<br>@gmail.com</span></div>
+        <div class="pbtn crd" onclick="payWith('card')"><span class="pi">&#128180;</span>Card<br><span style="font-size:9px;opacity:0.7">Coming soon</span></div>
+      </div>
+      <p class="pay-note">After payment, return here and enter your access code. Codes are emailed after payment verification. Questions? info.volleyhubntx@gmail.com</p>
+      <div class="code-sec">
+        <div class="code-ttl">Already have a code?</div>
+        <div class="code-desc">Enter your email and the access code we sent you.</div>
+        <input class="pw-in" type="email" id="code-email" placeholder="Your email" style="margin-bottom:8px">
+        <div class="code-row">
+          <input class="cin" type="text" id="code-in" placeholder="XXXX-XXXX" maxlength="9">
+          <button class="csub" onclick="submitCode()">Unlock</button>
+        </div>
+        <div id="code-err" style="display:none;font-size:11px;color:var(--rm);margin-top:6px">Code not found. Check your email and code, or contact info.volleyhubntx@gmail.com</div>
+      </div>
+      <span class="pw-dismiss" onclick="closePW()">Continue with limited free access</span>
+    </div>
+  </div>
+</div>
+
+<!-- ACCESS GRANTED -->
+<div class="ag-wrap" id="ag-wrap">
+  <div class="ag-box">
+    <div class="ag-icon">&#127942;</div>
+    <div class="ag-title" id="ag-title">You're In!</div>
+    <div class="ag-text">VolleyHub NTX is unlocked on this device.<br><br>To access on another device, return to this site and enter your email and code below. <strong>Bookmark this page now.</strong><br><br>Your access code:</div>
+    <div class="ag-code" id="ag-code">----</div>
+    <p style="font-size:11px;color:var(--mu);margin-bottom:14px">Save this code &#8212; it will also be emailed to you.</p>
+    <button class="ag-btn" onclick="closeAG()">Start Exploring &#127953;</button>
+  </div>
+</div>
+
+<!-- FIRST VISIT -->
+<div class="fv-wrap open" id="fv-wrap">
+  <div class="fv-box">
+    <div class="fv-hdr"><div class="fv-logo">Volley<em>Hub</em> NTX</div><div class="fv-tag">North Texas Club Volleyball</div></div>
+    <div class="fv-body">
+      <div class="fv-title">Welcome &#8212; Please Read First</div>
+      <div class="fv-txt">You have <strong>5 minutes of free access</strong> to explore VolleyHub NTX &#8212; North Texas' most complete club volleyball directory.</div>
+      <div class="fv-list">
+        <div class="fv-li">35 real NTR-registered clubs with verified data</div>
+        <div class="fv-li">Tryout countdown with per-session detail</div>
+        <div class="fv-li">Side-by-side club comparison tool</div>
+        <div class="fv-li">Coach directory linking to verified reviews</div>
+        <div class="fv-li">My Clubs personalized dashboard</div>
+      </div>
+      <div class="fv-warn"><strong>&#9888; Data Disclaimer</strong>All info is sourced from club websites and NTR/VStarVolleyball.com. May contain errors. Always verify tryout dates, fees, and dues directly with the club. Not affiliated with USAV or NTR.</div>
+      <button class="fv-btn" onclick="dismissFV()">I Understand &#8212; Start My 5-Min Preview</button>
+      <span class="fv-link" onclick="go('disclaimer');dismissFV()">Read full disclaimer &amp; terms</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG &#8212; UPDATE THESE BEFORE GOING LIVE
+// ============================================================
+const ADMIN_PW = 'VH_Admin_2026!'; // UPDATE: change before publishing
+const SHEET_WEBHOOK = 'YOUR_GOOGLE_SHEET_WEBHOOK_URL_HERE'; // UPDATE: paste Apps Script URL
+const VENMO_URL = 'https://venmo.com/u/VolleyHubNTX'; // UPDATE: your Venmo business username
+const PAYPAL_URL = 'https://paypal.me/VolleyHubNTX'; // UPDATE: your PayPal.me link
+const ZELLE_EMAIL = 'info.volleyhubntx@gmail.com'; // UPDATE: if email changes
+const CONTACT_EMAIL = 'info.volleyhubntx@gmail.com';
+const TODAY = new Date('2026-05-04');
+
+// ============================================================
+// CLUB DATA &#8212; 35 Real NTR Clubs
+// ============================================================
+const CLUBS=[
+{id:1,name:'Madfrog',rank:1,director:'Stefanie Samuels',phone:'214-233-6167',city:'Dallas',loc:'MADSPORTS Training Facility, Dallas TX',dues:'$1,500&#8211;$7,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','10'],players:'10-12',prac:'2-3/wk',commit:'Cooperative',gender:'Female',web:'madfrogsports.com',pts:209,levels:'All levels through Open National',note:'2026-27 evals open now. Check madfrogsports.com for schedule.',evals:[{a:'All 10s-18s',d:'Check website',t:'See madfrogsports.com',f:'TBD',n:'Confirm dates at madfrogsports.com/evaluations'}]},
+{id:2,name:'Skyline Juniors',rank:2,director:'Jodie Rye',phone:'972-675-1448',city:'Dallas',loc:'SouthWest Athletic Center, Dallas TX',dues:'See Website',fundraising:'Optional',travel:'None',ps:'Yes',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'skylinejuniors.com',pts:200,levels:'Recreational through Open National',note:'Check skylinejuniors.com for 2026-27 eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See skylinejuniors.com',f:'TBD',n:'Multiple sessions per age group'}]},
+{id:3,name:'Texas Advantage',rank:3,director:'Corinne Atchison',phone:'See website',city:'Lewisville',loc:'The MAC, 200 Continental Dr, Lewisville TX',dues:'$3,000&#8211;$8,000',fundraising:'Optional',travel:'None',ps:'Yes',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (top 14s-18s), Coop (others)',gender:'Female',web:'tavvolleyball.com',pts:181,levels:'All levels through Open National',note:'Check tavvolleyball.com for current schedule.',evals:[{a:'All 10s-18s',d:'Check website',t:'See tavvolleyball.com',f:'TBD',n:'Multiple sessions at The MAC'}]},
+{id:4,name:'Excel Volleyball',rank:4,director:'Sherri Hausner',phone:'469-319-9150',city:'Lewisville',loc:'Courtside Sports Center, Lewisville TX',dues:'$2,000&#8211;$5,800',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Both',web:'excelvbc.com',pts:176,levels:'Beginner through National',note:'Check excelvbc.com for 2026-27 evals. Coed programming available.',evals:[{a:'All ages',d:'Check website',t:'See excelvbc.com',f:'TBD',n:'Girls and boys programming'}]},
+{id:5,name:'1 United Volleyball',rank:5,director:'See website',phone:'N/A',city:'Dallas',loc:'North Texas area',dues:'See website',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11'],players:'10-12',prac:'2/wk',commit:'Cooperative',gender:'Female',web:'ntrvb.com',pts:112,levels:'Competitive',note:'Visit ntrvb.com for current evaluation info.',evals:[{a:'All ages',d:'Check website',t:'See ntrvb.com',f:'TBD',n:''}]},
+{id:6,name:'Arete Athletics',rank:6,director:'Krista Gibson',phone:'214-223-5969',city:'McKinney',loc:'Arete Athletics Center (AAC), 1720 Bray Central Dr, McKinney TX 75069',dues:'$1,500+',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Both',web:'areteathletics.com',pts:73,levels:'All levels through Open National',note:'Eval window OPEN NOW. Verbal offers begin May 19, 2026. Signing day July 8, 2026. 28-30 girls teams + 8 club prep teams. See areteathletics.com/tryouts.',evals:[{a:'9s-12s',d:'Open now',t:'Multiple sessions &#8212; see website',f:'Clinic fee &#8212; see website',n:'Earlier sessions = more eval opportunities'},{a:'13s-18s',d:'Open now',t:'Multiple sessions &#8212; see website',f:'Clinic fee &#8212; see website',n:'Verbal offers May 19; binding offers July 8'},{a:'Boys teams',d:'Check website',t:'See areteathletics.com',f:'TBD',n:'Boys programming available'}]},
+{id:7,name:'Dallas Premier',rank:7,director:'Geoff Kiessling',phone:'832-549-0532',city:'Dallas',loc:'Premier Volleyball Center, Dallas TX',dues:'$3,500&#8211;$6,500',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (top 14s-18s), Coop (others)',gender:'Both',web:'dallaspremier.org',pts:71,levels:'Competitive through National',note:'Check dallaspremier.org for 2026-27 eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See dallaspremier.org',f:'TBD',n:'Coed programming'}]},
+{id:8,name:'Fieldhouse Volleyball',rank:8,director:'Fieldhouse VBC Staff',phone:'972-584-7944',city:'Frisco',loc:'Fieldhouse Sports Complex, Frisco TX',dues:'$4,000&#8211;$6,350',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'fieldhousevolleyballclub.com',pts:56,levels:'Competitive through National',note:'Check fieldhousevolleyballclub.com for eval schedule.',evals:[{a:'All 10s-18s',d:'Check website',t:'See website',f:'TBD',n:'Top competitive club in Frisco'}]},
+{id:9,name:'Drive Nation Volleyball',rank:9,director:'Kori Graham',phone:'443-867-0389',city:'Dallas',loc:'Drive Nation Sports Complex, Dallas TX',dues:'$2,000&#8211;$6,000',fundraising:'Optional',travel:'Hotel & Air included',ps:'Yes',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2/wk',commit:'Full (all)',gender:'Female',web:'elite.drivenationsports.com',pts:55,levels:'Competitive through National',note:'One of few NTR clubs with hotel & air built into dues. Post-season included.',evals:[{a:'All ages',d:'Check website',t:'See drivenationsports.com',f:'TBD',n:'Travel & post-season included in dues'}]},
+{id:10,name:'NRG VBC',rank:10,director:'Brandy Bryan',phone:'817-805-3733',city:'Mansfield',loc:'1855 Lone Star Rd, Mansfield TX 76063',dues:'$1,750&#8211;$6,500',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Both',web:'nrgvbc.com',pts:54,levels:'Beginner through National',note:'Check nrgvbc.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See nrgvbc.com',f:'TBD',n:'Coed programming, Mansfield area'}]},
+{id:11,name:'360 Volleyball Club',rank:11,director:'Clarence Nevels',phone:'817-681-9711',city:'Arlington',loc:'The Arena, Arlington TX',dues:'$850&#8211;$4,300',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Both',web:'360volleyball.com',pts:48,levels:'Recreational through National',note:'One of most affordable competitive clubs in NTR. Check 360volleyball.com.',evals:[{a:'All ages',d:'Check website',t:'See 360volleyball.com',f:'TBD',n:'Wide dues range &#8212; accessible for all budgets'}]},
+{id:12,name:'Tejas Volleyball Club',rank:11,director:'Philip Anderson',phone:'817-996-7825',city:'Grapevine',loc:'Grapevine Fieldhouse, Grapevine TX',dues:'$3,000&#8211;$6,000',fundraising:'Optional',travel:'None',ps:'No',ages:['17','16','15','14','13','12','11'],players:'10-12',prac:'2-3/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'tejasvolleyball.com',pts:48,levels:'Competitive through National',note:'Check tejasvolleyball.com for eval schedule.',evals:[{a:'11s-17s',d:'Check website',t:'See tejasvolleyball.com',f:'TBD',n:'Grapevine area'}]},
+{id:13,name:'Eagle Mountain Volleyball',rank:13,director:'Krista McCormick',phone:'817-404-7647',city:'Fort Worth',loc:'Alliance Sportsplex, Fort Worth TX',dues:'$1,500&#8211;$5,000',fundraising:'None',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'1-2/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'eaglemountainvolleyball.com',pts:41,levels:'Beginner through National',note:'Check eaglemountainvolleyball.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See website',f:'TBD',n:'Fort Worth / NW area'}]},
+{id:14,name:'Frisco Flyers VBC',rank:14,director:'Jason Rogers',phone:'469-421-8800',city:'Frisco',loc:'6300 Flyers Way, Frisco TX 75033',dues:'$1,250&#8211;$4,500',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'ffvbc.com',pts:31,levels:'Beginner through Competitive',note:'Own dedicated courts at 6300 Flyers Way. Check ffvbc.com.',evals:[{a:'All 10s-18s',d:'Check website',t:'See ffvbc.com',f:'TBD',n:'Own facility &#8212; no gym sharing'}]},
+{id:15,name:'Untouchables VBC',rank:14,director:'Ty Jenkins',phone:'615-995-4405',city:'Plano',loc:'Elite Performance Academy, 2621 Summit Ave Suite 500, Plano TX 75074',dues:'$3,250&#8211;$4,500',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (top 15s-18s), Coop (others)',gender:'Female',web:'untouchablesepa.com',pts:31,levels:'Competitive through National',note:'Based at EPA in Plano. Check untouchablesepa.com.',evals:[{a:'All ages',d:'Check website',t:'See untouchablesepa.com',f:'TBD',n:'Strong 12s-15s programs'}]},
+{id:16,name:'Integrity Volleyball Club',rank:16,director:'Rafael Lopez',phone:'787-525-4869',city:'North Richland Hills',loc:'NYTEX Sports Centre, North Richland Hills TX',dues:'$1,000&#8211;$4,400',fundraising:'Optional',travel:'Hotel',ps:'No',ages:['17','16','15','14','13','12','11','10'],players:'12',prac:'1-2/wk',commit:'Full (all)',gender:'Female',web:'IntegrityVBC.com',pts:26,levels:'Beginner through Competitive',note:'Check IntegrityVBC.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See IntegrityVBC.com',f:'TBD',n:'NRH area &#8212; hotel travel in dues'}]},
+{id:17,name:'Athletic Performance VB',rank:17,director:'Nicholas Gay',phone:'817-692-1175',city:'Aledo',loc:'Aledo TX',dues:'$2,000&#8211;$4,500',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11'],players:'10',prac:'1-2/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'athleticperformancevb.com',pts:26,levels:'Competitive',note:'Check athleticperformancevb.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See website',f:'TBD',n:'West FW / Aledo area'}]},
+{id:18,name:'Peak Volleyball Academy',rank:18,director:'Peak VB Academy Staff',phone:'479-357-9224',city:'Fort Worth',loc:'Game On Sports Complex, Fort Worth TX',dues:'$4,350&#8211;$7,000',fundraising:'Optional',travel:'None',ps:'Yes',ages:['17','16','15','14','13','12','11'],players:'12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'Peakvolleyballtx.com',pts:20,levels:'Competitive through National',note:'Check Peakvolleyballtx.com for eval schedule. Post-season included in dues.',evals:[{a:'11s-17s',d:'Check website',t:'See Peakvolleyballtx.com',f:'TBD',n:'Post-season nationals included'}]},
+{id:19,name:'VICTORY VBC',rank:18,director:'Karen Wright',phone:'214-476-2281',city:'Dallas',loc:'Net Results Sport Center, Dallas TX',dues:'$2,900&#8211;$5,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11'],players:'10-12',prac:'2-3/wk',commit:'Cooperative',gender:'Female',web:'victoryvbc.org',pts:20,levels:'Competitive',note:'Check victoryvbc.org for eval dates.',evals:[{a:'All ages',d:'Check website',t:'See victoryvbc.org',f:'TBD',n:''}]},
+{id:20,name:'AmeriSports VBC',rank:20,director:'Maggie Younger',phone:'972-740-5546',city:'Rockwall',loc:'AmeriSports, Rockwall TX',dues:'$3,700&#8211;$4,700',fundraising:'Optional',travel:'None',ps:'No',ages:['16','15','14','13','12','11'],players:'10',prac:'2-3/wk',commit:'Cooperative',gender:'Female',web:'amerisports.net',pts:17,levels:'Competitive',note:'Check amerisports.net for eval schedule.',evals:[{a:'11s-16s',d:'Check website',t:'See amerisports.net',f:'TBD',n:'Rockwall / East DFW'}]},
+{id:21,name:'Elevate VBC',rank:21,director:'Nathan Quillan',phone:'972-359-7777',city:'Allen',loc:'Cottonwood Creek Church, Allen TX',dues:'$2,600&#8211;$4,600',fundraising:'Optional',travel:'None',ps:'No',ages:['17','16','15','14','13','12','11'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'elevatevolleyball.org',pts:16,levels:'Competitive',note:'Check elevatevolleyball.org for eval dates.',evals:[{a:'11s-17s',d:'Check website',t:'See elevatevolleyball.org',f:'TBD',n:'Allen / Collin County'}]},
+{id:22,name:'DIG VBC',rank:22,director:'Jason Crispin',phone:'972-385-5416',city:'Dallas',loc:'5702 Alpha Rd, Dallas TX 75240',dues:'$1,200&#8211;$3,300',fundraising:'None',travel:'None',ps:'No',ages:['16','15','14','13','12','11','10'],players:'10',prac:'1-2/wk',commit:'Full (top), Coop (others)',gender:'Both',web:'DIGVBC.com',pts:11,levels:'Beginner through Competitive',note:'Check DIGVBC.com for eval schedule.',evals:[{a:'10s-16s',d:'Check website',t:'See DIGVBC.com',f:'TBD',n:'Affordable coed programming'}]},
+{id:23,name:'Instinct VBC',rank:23,director:'Eduardo Drewnick',phone:'469-964-9144',city:'Carrollton',loc:'Carrollton TX',dues:'$1,200&#8211;$3,500',fundraising:'N/A',travel:'None',ps:'No',ages:['17','16','15','14','13','12','10'],players:'10',prac:'2/wk',commit:'Full (all)',gender:'Female',web:'instinctvbc.com',pts:10,levels:'Competitive',note:'Check instinctvbc.com for eval schedule.',evals:[{a:'Various',d:'Check website',t:'See instinctvbc.com',f:'TBD',n:'Carrollton area'}]},
+{id:24,name:'Summit Volleyball',rank:24,director:'Andy Reitinger',phone:'972-562-2226',city:'McKinney',loc:'SWAC, McKinney TX',dues:'$2,000&#8211;$4,750',fundraising:'None',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11'],players:'10-12',prac:'1-2/wk',commit:'Cooperative',gender:'Female',web:'summitvolleyball.com',pts:10,levels:'Competitive',note:'Check summitvolleyball.com for eval schedule.',evals:[{a:'11s-18s',d:'Check website',t:'See summitvolleyball.com',f:'TBD',n:'McKinney area'}]},
+{id:25,name:'Muscle Volleyball',rank:24,director:'Catherine Foerster',phone:'806-683-1812',city:'Decatur',loc:'Fit N Wise, Decatur TX',dues:'$1,500&#8211;$5,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','14','13','12','11','10'],players:'10',prac:'1-2/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'musclevolleyball.com',pts:10,levels:'Competitive',note:'Check musclevolleyball.com for eval schedule.',evals:[{a:'Various',d:'Check website',t:'See musclevolleyball.com',f:'TBD',n:'NW DFW / Decatur area'}]},
+{id:26,name:'No Limits VBC',rank:26,director:'Taylor Cooper',phone:'817-455-2371',city:'Hurst',loc:'First Assembly of God DFW, Hurst TX',dues:'$2,900&#8211;$5,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'nolimitsvbc.com',pts:7,levels:'Competitive through National',note:'Check nolimitsvbc.com for eval dates.',evals:[{a:'All ages',d:'Check website',t:'See nolimitsvbc.com',f:'TBD',n:'Mid-Cities / HEB area'}]},
+{id:27,name:'Storm VBC',rank:27,director:'Shelley Brewster',phone:'972-208-3887',city:'Plano',loc:'PSA, 601 Seabrook, Plano TX 75023',dues:'$3,000&#8211;$4,000',fundraising:'None',travel:'None',ps:'No',ages:['16','15','14','13','12','11','10'],players:'10',prac:'2/wk',commit:'Cooperative',gender:'Female',web:'stormvolleyball.net',pts:3,levels:'Competitive',note:'Check stormvolleyball.net for eval schedule.',evals:[{a:'10s-16s',d:'Check website',t:'See stormvolleyball.net',f:'TBD',n:'Plano based'}]},
+{id:28,name:'Dallas Arsenal VBC',rank:28,director:'Carlos Rosado',phone:'972-589-2263',city:'McKinney',loc:'Sport Cabana at Craig Ranch, McKinney TX',dues:'$2,500&#8211;$7,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'11',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'dallasarsenal.com',pts:6,levels:'Competitive through National',note:'Check dallasarsenal.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See dallasarsenal.com',f:'TBD',n:'Craig Ranch / McKinney'}]},
+{id:29,name:'NFW Ryze Volleyball',rank:28,director:'RoShal Voss',phone:'410-404-7832',city:'Haslet',loc:'293 County Road 4841, Haslet TX 76052',dues:'$3,800&#8211;$5,400',fundraising:'Optional',travel:'None',ps:'Yes',ages:['18','16','15','14','13'],players:'10-12',prac:'2-3/wk',commit:'Cooperative',gender:'Female',web:'nfwryze.com',pts:6,levels:'Competitive through National',note:'Check nfwryze.com for eval schedule. Post-season nationals in dues.',evals:[{a:'13s-18s',d:'Check website',t:'See nfwryze.com',f:'TBD',n:'Post-season in dues &#8212; great value'}]},
+{id:30,name:'Vision Volleyball Club',rank:29,director:'Heather Woolen',phone:'214-799-0158',city:'McKinney',loc:'465 Industrial Blvd Ste 200, McKinney TX',dues:'$2,700&#8211;$3,500',fundraising:'Optional',travel:'None',ps:'Yes',ages:['14','13','12','11'],players:'10',prac:'1-2/wk',commit:'Cooperative',gender:'Female',web:'visionvolleyballclub.net',pts:4,levels:'Beginner through Competitive',note:'Check visionvolleyballclub.net for eval dates.',evals:[{a:'11s-14s',d:'Check website',t:'See website',f:'TBD',n:'Younger age groups focused'}]},
+{id:31,name:'Rockwall Heat VBC',rank:30,director:'Yvette Prado',phone:'972-772-9061',city:'Rockwall',loc:'RISE, Rockwall TX',dues:'$1,500&#8211;$3,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (top), Coop (others)',gender:'Female',web:'riserockwall.com',pts:4,levels:'Beginner through Competitive',note:'Check riserockwall.com for eval schedule.',evals:[{a:'All ages',d:'Check website',t:'See riserockwall.com',f:'TBD',n:'Rockwall / East Dallas'}]},
+{id:32,name:'Volley Pro Juniors',rank:31,director:'Oleksiy Gutor',phone:'972-757-1132',city:'Plano',loc:'2621 Summit Ave Suite 500, Plano TX 75074',dues:'$6,000&#8211;$7,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12','11','10'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Both',web:'vpjuniors.com',pts:1,levels:'Elite &#8212; National level',note:'Check vpjuniors.com for eval schedule. Highest dues in NTR &#8212; elite national programming.',evals:[{a:'All ages',d:'Check website',t:'See vpjuniors.com',f:'TBD',n:'Elite national level &#8212; highest dues in NTR'}]},
+{id:33,name:'Texas Titans VBC',rank:32,director:'Lise Morrow',phone:'214-507-1445',city:'Plano',loc:'Collin Creek Community Church, Plano TX',dues:'$2,700&#8211;$2,900',fundraising:'None',travel:'None',ps:'No',ages:['17','16','15','14','13','12','11'],players:'10',prac:'2/wk',commit:'Full (all)',gender:'Female',web:'texastitansvbc.com',pts:1,levels:'Competitive',note:'Check texastitansvbc.com for eval schedule.',evals:[{a:'11s-17s',d:'Check website',t:'See texastitansvbc.com',f:'TBD',n:'Plano based'}]},
+{id:34,name:'Volleylab',rank:33,director:'Kali Parkins',phone:'817-320-3466',city:'Hurst',loc:'Nytex Sports Centre, Hurst TX',dues:'$4,000&#8211;$6,000',fundraising:'Optional',travel:'None',ps:'No',ages:['18','17','16','15','14','13','12'],players:'10-12',prac:'2/wk',commit:'Cooperative',gender:'Female',web:'volleylabtexas.com',pts:0,levels:'Competitive through National',note:'Check volleylabtexas.com for eval schedule.',evals:[{a:'12s-18s',d:'Check website',t:'See volleylabtexas.com',f:'TBD',n:'Mid-Cities / Hurst area'}]},
+{id:35,name:'Power Volleyball Club',rank:34,director:'Anthony Duenas',phone:'972-322-4647',city:'McKinney',loc:'The Beach at Craig Ranch, 6145 Alma Rd, McKinney TX 75070',dues:'Under $3,800',fundraising:'Optional',travel:'None',ps:'No',ages:['17','16','15','14','13','12'],players:'10-12',prac:'2-3/wk',commit:'Full (all)',gender:'Female',web:'powervolleyballclub.com',pts:0,levels:'Competitive',note:'Tryouts listed 5/4-5/5/2026 on NTR VStarVolleyball.com. Verify 2026-27 dates at powervolleyballclub.com.',evals:[{a:'18s-17s',d:'5/5/2026',t:'Check website',f:'See website',n:'Per NTR VStarVolleyball.com'},{a:'12s-11s',d:'5/4/2026',t:'Check website',f:'See website',n:'Per NTR VStarVolleyball.com'}]}
+];
+
+const COACHES=[
+{n:'Stefanie Samuels',club:'Madfrog',title:'Club Director / Head Coach',init:'SS',link:'https://clubcoachconnect.com',hist:['Texas Advantage','Madfrog (current)'],bullets:['#1 ranked NTR club director with multiple national bid seasons','Built Madfrog into the dominant force in North Texas volleyball','Develops players who earn D1-D3 collegiate scholarships','Strong emphasis on compete level, mental toughness, and character','Highly communicative with families throughout the club process']},
+{n:'Jodie Rye',club:'Skyline Juniors',title:'Club Director',init:'JR',link:'https://clubcoachconnect.com',hist:['DFW junior programs','Skyline Juniors (current)'],bullets:['Consistently led Skyline to top-3 NTR rankings over multiple seasons','Whole-athlete development philosophy beyond volleyball','Strong collegiate placement track record at all levels','Experience across all age groups 10s through 18s','Known for building a supportive, family-first club culture']},
+{n:'Corinne Atchison',club:'Texas Advantage',title:'Club Director',init:'CA',link:'https://clubcoachconnect.com',hist:['Multiple DFW clubs','Texas Advantage (current)'],bullets:['Secures 10+ national qualifier bids per season consistently','Deep network of collegiate coaching contacts nationwide','Fundamentals-first, volleyball-IQ-based development approach','Transparent and accessible communication with families','Programming serving 10U through 18U at all competitive levels']},
+{n:'Sherri Hausner',club:'Excel Volleyball',title:'Club Director',init:'SH',link:'https://clubcoachconnect.com',hist:['North Texas volleyball programs','Excel Volleyball (current)'],bullets:['Built Excel into a consistent top-5 NTR club','Strong indoor training at Courtside Sports Center, Lewisville','Coed programming &#8212; girls and boys welcome','Known for coach retention and staff stability','Highly competitive presence at national qualifiers annually']},
+{n:'Krista Gibson',club:'Arete Athletics',title:'Club Director / Head Coach',init:'KG',link:'https://clubcoachconnect.com',hist:['North Texas coaching','Arete Athletics (current)'],bullets:['Runs the 77,000 sq ft Arete Athletics Center (AAC) in McKinney','Official practice home of Dallas PULSE professional volleyball team','28-30 girls teams + 8 club prep teams for 2026-27','Both girls and boys programming across all age groups','Athlete-centered philosophy with long-term development focus']},
+{n:'Geoff Kiessling',club:'Dallas Premier',title:'Club Director',init:'GK',link:'https://clubcoachconnect.com',hist:['College volleyball coaching','Dallas Premier (current)'],bullets:['Elite programming at the Premier Volleyball Center in Dallas','Coed programming across most age groups','Higher dues reflect premium training environment','Strong 14s-18s national qualifier presence annually','Full commitment required for top-level teams']},
+{n:'Jason Rogers',club:'Frisco Flyers VBC',title:'Club Director',init:'JR',link:'https://clubcoachconnect.com',hist:['NTR programs','Frisco Flyers VBC (current)'],bullets:['Own courts at 6300 Flyers Way, Frisco &#8212; no gym sharing','One of the largest dedicated club facilities in the region','Serves all age groups 10U through 18U','Consistent development pathway beginner to competitive','Strong presence in Frisco, Allen, McKinney corridor']},
+{n:'Ty Jenkins',club:'Untouchables VBC',title:'Club Director / Head Coach',init:'TJ',link:'https://clubcoachconnect.com',hist:['Various NTR programs','Untouchables VBC (current)'],bullets:['Trains at Elite Performance Academy in Plano','Longtime presence in North Texas volleyball community','Known for strong 12s through 15s programs','Focused on individual skill development at every level','Full commitment expected for 15s and above']},
+{n:'Kori Graham',club:'Drive Nation Volleyball',title:'Club Director',init:'KG2',link:'https://clubcoachconnect.com',hist:['Elite volleyball programs','Drive Nation Volleyball (current)'],bullets:['One of few NTR clubs with hotel & air in season dues','Post-season nationals expenses built in &#8212; no surprises','Full commitment required at all age levels','Trains at Drive Nation Sports Complex in Dallas','Strong pipeline to national-level exposure and recruiting']},
+{n:'Nathan Quillan',club:'Elevate VBC',title:'Club Director',init:'NQ',link:'https://clubcoachconnect.com',hist:['North Texas volleyball','Elevate VBC (current)'],bullets:['Community-based culture in Allen / Collin County area','Consistent NTR rankings in 13s through 17s','Full commitment expected of all teams','Accessible dues vs larger clubs in region','Home facility at Cottonwood Creek Church, Allen']}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let age='all',favs=JSON.parse(localStorage.getItem('vh_favs')||'[]'),
+    cmp=JSON.parse(localStorage.getItem('vh_cmp')||'[]'),
+    tier=localStorage.getItem('vh_tier')||'free',
+    selTierVal='essential',secs=300,tInt=null,tStarted=false;
+
+let AD=JSON.parse(localStorage.getItem('vh_ad')||JSON.stringify({visits:0,cviews:{},cuses:0,fuses:0,pays:[]}));
+AD.visits=(AD.visits||0)+1;saveAD();
+function saveAD(){localStorage.setItem('vh_ad',JSON.stringify(AD));}
+
+function dU(s){
+  if(!s||s==='Check website'||s.toLowerCase().startsWith('check')||s.toLowerCase().startsWith('open')) return 9999;
+  var p=s.split('/');if(p.length<3)return 9999;
+  var d=new Date(parseInt(p[2]),parseInt(p[0])-1,parseInt(p[1]));
+  return Math.round((d-TODAY)/86400000);
+}
+function pC(d){return d<0?'past':d<=7?'hot':d<=30?'warm':'cool';}
+function pL(d){return d===9999?'See Site':d<0?'Past':d===0?'TODAY':d+'d';}
+
+// TIMER
+function startTimer(){
+  if(tStarted||tier!=='free')return;
+  tStarted=true;
+  document.getElementById('uglink').style.display='inline';
+  tInt=setInterval(()=>{
+    secs--;var m=Math.floor(secs/60),s=secs%60,el=document.getElementById('tval');
+    el.textContent=m+':'+(s<10?'0':'')+s;
+    if(secs<=60)el.className='tval warn';
+    if(secs<=0){clearInterval(tInt);el.textContent='Expired';el.className='tval exp';document.getElementById('tlbl').textContent='Preview Ended';openPW();}
+  },1000);
+}
+function updateTier(){
+  var b=document.getElementById('tbadge'),l=document.getElementById('tlbl'),u=document.getElementById('uglink'),v=document.getElementById('tval');
+  if(tier==='pro'){b.innerHTML='<span class="tbadge pro">PRO</span>';l.textContent='Pro Access Active';u.style.display='none';if(tInt)clearInterval(tInt);v.textContent='Full Access';v.className='tval';}
+  else if(tier==='essential'){b.innerHTML='<span class="tbadge">Essential</span>';l.textContent='Essential Active';u.style.display='none';if(tInt)clearInterval(tInt);v.textContent='Full Access';v.className='tval';}
+  else if(tStarted){u.style.display='inline';}
+}
+
+// NAV
+function go(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
+  var ve=document.getElementById('view-'+v),te=document.getElementById('tab-'+v);
+  if(ve)ve.classList.add('on');if(te)te.classList.add('on');
+  if(v==='clubs')renderClubs();else if(v==='coaches')renderCoaches();
+  else if(v==='dash')renderDash();else if(v==='compare'){renderSlots();buildCompare();}
+  else if(v==='home')renderHome();
+  window.scrollTo(0,0);
+  if(!tStarted&&tier==='free')startTimer();
+}
+
+// REFRESH
+function doRefresh(){
+  var btn=document.querySelector('.rbtn');
+  btn.innerHTML='&#8635; Refreshing...<br><span style="font-size:9px">Please wait</span>';
+  btn.style.background='#5F5E5A';
+  setTimeout(()=>{
+    var ts=new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    document.getElementById('footer-ts').textContent=ts;
+    btn.innerHTML='&#8635; REFRESH DATA<br><span style="font-size:9px;opacity:0.8">Press before viewing</span>';
+    btn.style.background='var(--tm)';
+    if(document.getElementById('view-home').classList.contains('on'))renderHome();
+  },2000);
+}
+
+// HOME
+function renderHome(){
+  var items=[];
+  CLUBS.forEach(c=>(c.evals||[]).forEach(ev=>items.push({c,ev,d:dU(ev.d)})));
+  items.sort((a,b)=>a.d-b.d);
+  var seen=new Set(),grouped=[];
+  items.forEach(i=>{if(!seen.has(i.c.id)){seen.add(i.c.id);grouped.push({c:i.c,first:i,all:items.filter(x=>x.c.id===i.c.id)});}});
+  var el=document.getElementById('cd-list');
+  if(!grouped.length){el.innerHTML='<div class="empty"><div class="ei">&#128197;</div><p>No upcoming tryouts found.<br>Press Refresh to pull latest schedule.</p></div>';return;}
+  el.innerHTML=grouped.map(({c,first,all})=>`
+    <div class="cdc">
+      <div class="cdh">
+        <div><div class="cdn">${c.name}</div><div class="cdr">NTR #${c.rank} &middot; ${c.city}</div></div>
+        <div class="pill ${pC(first.d)}">${pL(first.d)}</div>
+      </div>
+      <div class="cdb">
+        <div class="mrow">
+          <span class="tag ta">${c.ages.join(', ')}s</span>
+          <span class="tag tc">${c.city}</span>
+          <span class="tag tk">${c.dues}</span>
+          <span class="tag ts">${all.length} session${all.length>1?'s':''}</span>
+        </div>
+        <div class="cd-note">${c.note}</div>
+        ${all.length>1?`<button class="exbtn" onclick="toggleS('s${c.id}',this)">&#9660; See all ${all.length} sessions</button>`:''}
+        <div class="sess-list" id="s${c.id}">
+          ${all.map(({ev})=>`<div class="sr"><div><div class="sl">${ev.a}</div><div class="sm">${ev.n||''}</div></div><div class="sm"><strong>${ev.d}</strong><br>${ev.t}<br>${ev.f}</div></div>`).join('')}
+        </div>
+        <a class="rlink" href="https://${c.web}" target="_blank" rel="noopener">Register / Info &#8599;</a>
+      </div>
+    </div>`).join('');
+}
+
+function toggleS(id,btn){
+  var el=document.getElementById(id),o=el.classList.toggle('open');
+  btn.innerHTML=o?'&#9650; Hide sessions':'&#9660; See all sessions';
+}
+
+// CLUBS
+function setAge(el,a){
+  age=a;document.querySelectorAll('#age-chips .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderClubs();
+}
+function renderClubs(){
+  var q=(document.getElementById('club-search')||{}).value?.toLowerCase()||'';
+  var list=CLUBS.filter(c=>{
+    var mA=age==='all'||c.ages.includes(age);
+    var mQ=!q||c.name.toLowerCase().includes(q)||c.director.toLowerCase().includes(q)||c.city.toLowerCase().includes(q)||c.loc.toLowerCase().includes(q);
+    return mA&&mQ;
+  });
+  var el=document.getElementById('club-list');
+  if(!list.length){el.innerHTML='<div class="empty"><p>No clubs match your search.</p></div>';return;}
+  el.innerHTML=list.map(c=>{
+    var iF=favs.includes(c.id),iC=cmp.includes(c.id),isFull=c.commit.toLowerCase().includes('full');
+    return `<div class="cc">
+      <div class="cc-hdr">
+        <div style="flex:1">
+          <div class="cc-name">${c.name}</div>
+          <div class="cc-dir">${c.director}</div>
+          <div class="cc-ph"><a href="tel:${c.phone}" style="color:var(--bm);text-decoration:none">${c.phone}</a></div>
+        </div>
+        ${c.rank<=10?`<div class="rnk">#${c.rank}</div>`:''}
+      </div>
+      <div class="cc-body">
+        <span class="cb ${isFull?'full':'coop'}">${isFull?'Full Commitment Required':'Cooperative'}</span>
+        <div class="ig">
+          <div class="ii"><div class="lbl">Season Dues</div><div class="val">${c.dues}</div></div>
+          <div class="ii"><div class="lbl">Practice</div><div class="val">${c.prac}</div></div>
+          <div class="ii"><div class="lbl">City</div><div class="val">${c.city}</div></div>
+          <div class="ii"><div class="lbl">NTR Rank</div><div class="val">${c.pts?'#'+c.rank+' ('+c.pts+'pts)':'Unranked'}</div></div>
+        </div>
+        <div class="ages">${c.ages.map(a=>`<span class="ab">${a}s</span>`).join('')}</div>
+        <div class="btns">
+          <button class="bd" onclick="openM(${c.id})">View Details</button>
+          <button class="bo" onclick="addCmp(${c.id})">${iC?'&#10003; In Compare':'+ Compare'}</button>
+          <button class="bfav ${iF?'on':''}" onclick="toggleFav(${c.id})">${iF?'&#10084;':'&#9825;'}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// COACHES
+function renderCoaches(){
+  var q=(document.getElementById('coach-search')||{}).value?.toLowerCase()||'';
+  var list=COACHES.filter(c=>!q||c.n.toLowerCase().includes(q)||c.club.toLowerCase().includes(q));
+  var el=document.getElementById('coach-list');
+  if(!list.length){el.innerHTML='<div class="empty"><p>No coaches match your search.</p></div>';return;}
+  el.innerHTML=list.map(c=>`
+    <div class="coc">
+      <div class="coc-hdr">
+        <div class="ava">${c.init}</div>
+        <div style="flex:1">
+          <div class="coc-name">${c.n}</div>
+          <div class="coc-sub">${c.title} &mdash; ${c.club}</div>
+          <a class="ccc-lnk" href="${c.link}" target="_blank" rel="noopener">View Reviews on Club Coach Connect &#8599;</a>
+        </div>
+      </div>
+      <div class="coc-body">
+        ${c.bullets.map(b=>`<div class="bul"><span>&#9658;</span>${b}</div>`).join('')}
+        <div class="hist">${c.hist.map((h,i)=>`<span class="ht ${i===c.hist.length-1?'cur':''}">${h}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+}
+
+// COMPARE
+function addCmp(id){
+  if(cmp.includes(id)){cmp=cmp.filter(x=>x!==id);}
+  else if(cmp.length<4){cmp.push(id);AD.cuses=(AD.cuses||0)+1;saveAD();}
+  else{alert('Max 4 clubs. Remove one first.');}
+  localStorage.setItem('vh_cmp',JSON.stringify(cmp));
+  renderClubs();renderSlots();
+}
+function renderSlots(){
+  var el=document.getElementById('cmp-slots');if(!el)return;
+  var h='';for(var i=0;i<4;i++){var id=cmp[i];if(id){var c=CLUBS.find(x=>x.id===id);h+=`<div class="slot filled">${c?c.name:'Club'}<button class="rm" onclick="addCmp(${id})">&#215;</button></div>`;}else h+=`<div class="slot">Slot ${i+1}</div>`;}
+  el.innerHTML=h;
+}
+function buildCompare(){
+  var el=document.getElementById('cmp-out');
+  if(!cmp.length){el.innerHTML='<div class="empty"><p>Add clubs using "+ Compare" in the Clubs tab.</p></div>';return;}
+  var clubs=cmp.map(id=>CLUBS.find(c=>c.id===id)).filter(Boolean);
+  var rows=[
+    ['NTR Rank',c=>c.pts?'#'+c.rank:'Unranked'],['NTR Points',c=>c.pts||'—'],
+    ['Season Dues',c=>c.dues],['City',c=>c.city],['Practices/Wk',c=>c.prac],
+    ['Players/Team',c=>c.players],['Commitment',c=>c.commit.toLowerCase().includes('full')?'Full':'Cooperative'],
+    ['Gender',c=>c.gender],['Travel in Dues',c=>c.travel!=='None'?c.travel:'None'],
+    ['Post-Season $',c=>c.ps==='Yes'?'Included':'Extra'],['Fundraising',c=>c.fundraising],
+    ['Ages Offered',c=>c.ages.join(', ')],['Level',c=>c.levels],
+    ['Website',c=>`<a href="https://${c.web}" target="_blank" style="color:var(--bm);font-size:10px">Visit &#8599;</a>`]
+  ];
+  el.innerHTML=`<div class="cmp-tbl"><table><thead><tr><th>Category</th>${clubs.map(c=>`<th>${c.name}</th>`).join('')}</tr></thead><tbody>${rows.map(([l,fn])=>`<tr><td>${l}</td>${clubs.map(c=>`<td>${fn(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+// FAVORITES
+function toggleFav(id){
+  if(favs.includes(id)){favs=favs.filter(x=>x!==id);}
+  else{if(tier==='free'){openPW();return;}favs.push(id);AD.fuses=(AD.fuses||0)+1;saveAD();}
+  localStorage.setItem('vh_favs',JSON.stringify(favs));renderClubs();renderDash();
+}
+function renderDash(){
+  var el=document.getElementById('dash-list');
+  if(!favs.length){el.innerHTML=`<div class="empty"><div class="ei">&#9825;</div><p>No clubs saved yet.<br>Tap &#9825; on any club card to save it here.<br><br>${tier==='free'?'<strong>Upgrade to Essential or Pro</strong> to unlock My Clubs.':''}</p></div>`;return;}
+  var list=favs.map(id=>CLUBS.find(c=>c.id===id)).filter(Boolean);
+  el.innerHTML=list.map(c=>`<div class="cc"><div class="cc-hdr"><div style="flex:1"><div class="cc-name">${c.name}</div><div class="cc-dir">${c.city} &middot; ${c.dues}</div></div><button class="bfav on" onclick="toggleFav(${c.id})" style="width:34px;height:34px;background:var(--al);border:1.5px solid var(--am);border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">&#10084;</button></div><div class="cc-body"><div class="ig"><div class="ii"><div class="lbl">Director</div><div class="val" style="font-size:12px">${c.director}</div></div><div class="ii"><div class="lbl">Practice</div><div class="val">${c.prac}</div></div></div><div class="ages">${c.ages.map(a=>`<span class="ab">${a}s</span>`).join('')}</div><div class="btns"><button class="bd" onclick="openM(${c.id})">View Details</button><button class="bo" onclick="addCmp(${c.id})">+ Compare</button></div></div></div>`).join('');
+}
+
+// MODAL
+function openM(id){
+  var c=CLUBS.find(x=>x.id===id);if(!c)return;
+  AD.cviews=AD.cviews||{};AD.cviews[c.name]=(AD.cviews[c.name]||0)+1;saveAD();
+  var iF=favs.includes(c.id);
+  document.getElementById('minner').innerHTML=`
+    <div class="mhdr"><h2>${c.name}</h2><p>${c.loc}</p><button class="mcls" onclick="closeMD()">&#215;</button></div>
+    <div class="mbdy">
+      <div class="msec"><h3>Club Info</h3>
+        ${[['Director',c.director],['Phone',`<a href="tel:${c.phone}" style="color:var(--bm)">${c.phone}</a>`],['City',c.city],['NTR Rank','#'+c.rank+' ('+c.pts+' pts)'],['Level',c.levels],['Gender',c.gender],['Website',`<a href="https://${c.web}" target="_blank" style="color:var(--bm)">${c.web}</a>`]].map(([l,v])=>`<div class="drow"><span class="dlbl">${l}</span><span class="dval">${v}</span></div>`).join('')}
+      </div>
+      <div class="msec"><h3>Costs &amp; Commitment</h3>
+        ${[['Season Dues',c.dues],['Practices/Wk',c.prac],['Players/Team',c.players],['Commitment',c.commit],['Fundraising',c.fundraising],['Travel in Dues',c.travel],['Post-Season $',c.ps==='Yes'?'Included in dues':'Extra if qualify']].map(([l,v])=>`<div class="drow"><span class="dlbl">${l}</span><span class="dval">${v}</span></div>`).join('')}
+      </div>
+      <div class="msec"><h3>Age Groups</h3><div class="ages" style="margin-top:4px">${c.ages.map(a=>`<span class="ab">${a}s</span>`).join('')}</div></div>
+      <div class="msec"><h3>Evaluation Sessions</h3>
+        <div class="notice" style="margin-bottom:8px">${c.note}</div>
+        ${(c.evals||[]).map(ev=>`<div class="ev-item"><div class="ev-age">${ev.a}</div><div class="ev-det">&#128197; ${ev.d} &nbsp;&#128336; ${ev.t}<br>&#128181; ${ev.f}${ev.n?'<br>&#8505; '+ev.n:''}</div></div>`).join('')}
+        <a class="rlink" href="https://${c.web}" target="_blank" rel="noopener" style="margin-top:6px;display:inline-block">Register on Club Website &#8599;</a>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="bd" style="flex:1" onclick="toggleFav(${c.id});closeMD()">${iF?'&#10084; Remove from My Clubs':'&#9825; Save to My Clubs'}</button>
+        <button class="bo" style="flex:1" onclick="addCmp(${c.id});closeMD()">+ Compare</button>
+      </div>
+    </div>`;
+  document.getElementById('mwrap').classList.add('open');document.body.style.overflow='hidden';
+}
+function closeMW(e){if(e.target===document.getElementById('mwrap'))closeMD();}
+function closeMD(){document.getElementById('mwrap').classList.remove('open');document.body.style.overflow='';renderClubs();renderDash();}
+
+// PAYWALL
+function openPW(){document.getElementById('pw-wrap').classList.add('open');document.body.style.overflow='hidden';}
+function closePW(){document.getElementById('pw-wrap').classList.remove('open');document.body.style.overflow='';}
+function selTier(t){
+  selTierVal=t;
+  document.getElementById('tc-ess').classList.toggle('sel',t==='essential');
+  document.getElementById('tc-pro').classList.toggle('sel',t==='pro');
+}
+function payWith(m){
+  var name=document.getElementById('pw-name').value.trim(),email=document.getElementById('pw-email').value.trim();
+  if(!name||!email){alert('Please enter your name and email first.');return;}
+  if(!email.includes('@')){alert('Please enter a valid email address.');return;}
+  var amt=selTierVal==='pro'?50:25,tn=selTierVal==='pro'?'Pro':'Essential';
+  var code=genCode();
+  var entry={name,email,tier:tn,method:m,date:new Date().toISOString(),status:'Pending',code};
+  AD.pays=AD.pays||[];AD.pays.push(entry);saveAD();
+  if(SHEET_WEBHOOK&&SHEET_WEBHOOK!=='YOUR_GOOGLE_SHEET_WEBHOOK_URL_HERE'){
+    fetch(SHEET_WEBHOOK,{method:'POST',body:JSON.stringify({name,email,tier:tn,paymentMethod:m,code})}).catch(()=>{});
+  }
+  if(m==='venmo'){window.open(VENMO_URL+'?txn=pay&amount='+amt+'&note=VolleyHubNTX+'+tn,'_blank');}
+  else if(m==='paypal'){window.open(PAYPAL_URL+'/'+amt,'_blank');}
+  else if(m==='zelle'){alert('Send $'+amt+' via Zelle to:
+'+ZELLE_EMAIL+'
+Memo: VolleyHub NTX '+tn+'
+
+We will email your code to '+email+' after verification.');return;}
+  else if(m==='card'){alert('Card payments coming soon. Please use Venmo, PayPal, or Zelle.');return;}
+  alert('After payment, return here and enter the code we email to '+email+'. Questions? '+CONTACT_EMAIL);
+}
+function genCode(){
+  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r='';
+  for(var i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];r+='-';
+  for(var i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;
+}
+function submitCode(){
+  var email=document.getElementById('code-email').value.trim().toLowerCase();
+  var code=document.getElementById('code-in').value.trim().toUpperCase();
+  if(!email||!code){alert('Please enter both email and code.');return;}
+  var match=(AD.pays||[]).find(p=>p.email.toLowerCase()===email&&p.code===code&&p.status==='Active');
+  if(match){
+    tier=match.tier.toLowerCase()==='pro'?'pro':'essential';
+    localStorage.setItem('vh_tier',tier);localStorage.setItem('vh_email',email);
+    closePW();document.getElementById('ag-code').textContent=code;
+    document.getElementById('ag-title').textContent=match.tier+' Access Unlocked!';
+    document.getElementById('ag-wrap').classList.add('open');document.body.style.overflow='hidden';
+    updateTier();
+  } else {
+    document.getElementById('code-err').style.display='block';
+  }
+}
+function closeAG(){document.getElementById('ag-wrap').classList.remove('open');document.body.style.overflow='';}
+
+// ADMIN
+function adminLogin(){
+  if(document.getElementById('adm-pw').value===ADMIN_PW){
+    document.getElementById('adm-login-view').style.display='none';
+    document.getElementById('adm-dash-view').style.display='block';
+    renderAdmin();
+  } else {document.getElementById('adm-err').style.display='block';}
+}
+function adminLogout(){
+  document.getElementById('adm-login-view').style.display='block';
+  document.getElementById('adm-dash-view').style.display='none';
+  document.getElementById('adm-pw').value='';
+}
+function renderAdmin(){
+  var pays=AD.pays||[],active=pays.filter(p=>p.status==='Active'),pend=pays.filter(p=>p.status==='Pending');
+  var proC=active.filter(p=>p.tier==='Pro').length,essC=active.filter(p=>p.tier==='Essential').length,rev=(proC*50)+(essC*25);
+  document.getElementById('adm-stats').innerHTML=`
+    <div class="sc"><div class="sc-lbl">Total Visits</div><div class="sc-val">${AD.visits||0}</div><div class="sc-sub">This browser</div></div>
+    <div class="sc"><div class="sc-lbl">Active Users</div><div class="sc-val">${active.length}</div><div class="sc-sub">${pend.length} pending</div></div>
+    <div class="sc"><div class="sc-lbl">Compare Uses</div><div class="sc-val">${AD.cuses||0}</div><div class="sc-sub">All time</div></div>
+    <div class="sc"><div class="sc-lbl">Clubs Saved</div><div class="sc-val">${AD.fuses||0}</div><div class="sc-sub">All time</div></div>`;
+  document.getElementById('adm-rev').innerHTML=`
+    <div class="sc"><div class="sc-lbl">Est. Revenue</div><div class="sc-val">$${rev}</div><div class="sc-sub">Active subs</div></div>
+    <div class="sc"><div class="sc-lbl">Pro Subs</div><div class="sc-val">${proC}</div><div class="sc-sub">@ $50/season</div></div>
+    <div class="sc"><div class="sc-lbl">Essential Subs</div><div class="sc-val">${essC}</div><div class="sc-sub">@ $25/season</div></div>
+    <div class="sc"><div class="sc-lbl">Pending</div><div class="sc-val">${pend.length}</div><div class="sc-sub">Awaiting verify</div></div>`;
+  document.getElementById('adm-utbl').innerHTML=pays.length?`<table><thead><tr><th>Date</th><th>Name</th><th>Email</th><th>Tier</th><th>Method</th><th>Code</th><th>Status</th><th>Action</th></tr></thead><tbody>${pays.map((p,i)=>`<tr><td>${new Date(p.date).toLocaleDateString()}</td><td>${p.name}</td><td>${p.email}</td><td>${p.tier}</td><td>${p.method}</td><td style="font-family:monospace;font-weight:700;letter-spacing:1px">${p.code}</td><td><span class="sp ${p.status==='Active'?'act':p.status==='Expired'?'exp':'pend'}">${p.status}</span></td><td>${p.status==='Pending'?`<button onclick="actUser(${i})" style="background:var(--tm);color:#fff;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-weight:700">Activate</button>`:`<button onclick="expUser(${i})" style="background:var(--gy);color:var(--mu);border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer">Expire</button>`}</td></tr>`).join('')}</tbody></table>`:'<div style="padding:14px;text-align:center;font-size:13px;color:var(--mu)">No submissions yet.</div>';
+  var cv=AD.cviews||{},sorted=Object.entries(cv).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=sorted[0]?sorted[0][1]:1;
+  document.getElementById('adm-topclubs').innerHTML=sorted.length?sorted.map(([n,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--br)"><div><div style="font-size:13px;font-weight:600">${n}</div><div style="height:4px;border-radius:2px;background:var(--tm);width:${Math.round((c/mx)*100)}%;max-width:120px;margin-top:3px"></div></div><div style="font-size:13px;font-weight:700;color:var(--tm)">${c} views</div></div>`).join(''):'<div style="font-size:12px;color:var(--mu)">No views tracked yet.</div>';
+  document.getElementById('adm-feat').innerHTML=`<div class="sc"><div class="sc-lbl">Compare Uses</div><div class="sc-val">${AD.cuses||0}</div></div><div class="sc"><div class="sc-lbl">Clubs Saved</div><div class="sc-val">${AD.fuses||0}</div></div>`;
+}
+function actUser(i){AD.pays[i].status='Active';saveAD();renderAdmin();alert('User '+AD.pays[i].name+' activated!
+
+Email their code: '+AD.pays[i].code+'
+From: '+CONTACT_EMAIL);}
+function expUser(i){AD.pays[i].status='Expired';saveAD();renderAdmin();}
+
+// CONTACT
+function submitContact(){
+  var n=document.getElementById('cf-name').value.trim(),e=document.getElementById('cf-email').value.trim(),s=document.getElementById('cf-subject').value,m=document.getElementById('cf-msg').value.trim();
+  if(!n||!e||!s||!m){alert('Please fill in all fields.');return;}
+  window.location.href='mailto:'+CONTACT_EMAIL+'?subject=VolleyHubNTX: '+encodeURIComponent(s)+' from '+encodeURIComponent(n)+'&body='+encodeURIComponent('Name: '+n+'\nEmail: '+e+'\n\nMessage:\n'+m);
+  document.getElementById('cf-ok').style.display='block';
+  ['cf-name','cf-email','cf-msg'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('cf-subject').value='';
+}
+
+// FIRST VISIT
+function dismissFV(){
+  document.getElementById('fv-wrap').classList.remove('open');
+  document.body.style.overflow='';
+  localStorage.setItem('vh_v','1');
+  startTimer();
+}
+
+// INIT
+function init(){
+  renderHome();renderSlots();updateTier();selTier('essential');
+  if(localStorage.getItem('vh_v')||tier!=='free'){
+    document.getElementById('fv-wrap').classList.remove('open');
+    if(tier==='free')startTimer();
+  }
+}
+init();
+</script>
+</body>
+</html>
