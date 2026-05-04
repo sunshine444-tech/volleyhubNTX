@@ -188,9 +188,9 @@ body{font-family:'Barlow',sans-serif;background:var(--gy);color:var(--tx);-webki
 .ag-code{background:var(--dk);color:var(--tm);font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;letter-spacing:4px;padding:10px 20px;border-radius:8px;display:inline-block;margin-bottom:12px}
 .ag-btn{width:100%;background:var(--tm);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:16px;letter-spacing:1px;cursor:pointer}
 /* FIRST VISIT */
-.fv-wrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.96);z-index:500;align-items:center;justify-content:center;padding:16px}
-.fv-wrap.open{display:flex}
-.fv-box{background:#fff;border-radius:16px;max-width:390px;width:100%;overflow:hidden;max-height:92vh;overflow-y:auto}
+.fv-wrap{display:none;position:fixed;inset:0;background:rgba(10,15,30,0.92);z-index:500;align-items:flex-end;justify-content:center;padding:0;pointer-events:none}
+.fv-wrap.open{display:flex;pointer-events:all}
+.fv-box{background:#fff;border-radius:16px 16px 0 0;max-width:430px;width:100%;overflow:hidden;max-height:85vh;overflow-y:auto}
 .fv-hdr{background:var(--dk);padding:20px;text-align:center}
 .fv-logo{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:30px;color:#fff}
 .fv-logo em{color:var(--tm);font-style:normal}
@@ -505,9 +505,9 @@ body{font-family:'Barlow',sans-serif;background:var(--gy);color:var(--tx);-webki
 </div>
 
 <!-- FIRST VISIT -->
-<div class="fv-wrap open" id="fv-wrap">
+<div class="fv-wrap" id="fv-wrap">
   <div class="fv-box">
-    <div class="fv-hdr"><div class="fv-logo">Volley<em>Hub</em> NTX</div><div class="fv-tag">North Texas Club Volleyball</div></div>
+    <div class="fv-hdr" style="position:relative"><div class="fv-logo">Volley<em>Hub</em> NTX</div><div class="fv-tag">North Texas Club Volleyball</div><button onclick="dismissFV()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">&#215;</button></div>
     <div class="fv-body">
       <div class="fv-title">Welcome &#8212; Please Read First</div>
       <div class="fv-txt">You have <strong>5 minutes of free access</strong> to explore VolleyHub NTX &#8212; North Texas' most complete club volleyball directory.</div>
@@ -521,6 +521,7 @@ body{font-family:'Barlow',sans-serif;background:var(--gy);color:var(--tx);-webki
       <div class="fv-warn"><strong>&#9888; Data Disclaimer</strong>All info is sourced from club websites and NTR/VStarVolleyball.com. May contain errors. Always verify tryout dates, fees, and dues directly with the club. Not affiliated with USAV or NTR.</div>
       <button class="fv-btn" onclick="dismissFV()">I Understand &#8212; Start My 5-Min Preview</button>
       <span class="fv-link" onclick="go('disclaimer');dismissFV()">Read full disclaimer &amp; terms</span>
+      <span class="fv-link" style="margin-top:6px;color:var(--rm)" onclick="dismissFV()">Skip for now &#215;</span>
     </div>
   </div>
 </div>
@@ -937,15 +938,25 @@ function dismissFV(){
   document.getElementById('fv-wrap').classList.remove('open');
   document.body.style.overflow='';
   localStorage.setItem('vh_v','1');
+  tStarted=false;
   startTimer();
 }
 
 // INIT
 function init(){
   renderHome();renderSlots();updateTier();selTier('essential');
-  if(localStorage.getItem('vh_v')||tier!=='free'){
-    document.getElementById('fv-wrap').classList.remove('open');
-    if(tier==='free')startTimer();
+  if(tier!=='free'){
+    // Already paid - just start normally
+    updateTier();
+  } else if(!localStorage.getItem('vh_v')){
+    // First ever visit - show welcome popup after short delay
+    // Don't block body overflow so nav still works
+    setTimeout(()=>{
+      document.getElementById('fv-wrap').classList.add('open');
+    }, 500);
+  } else {
+    // Returning free user - start timer but don't block
+    startTimer();
   }
 }
 init();
